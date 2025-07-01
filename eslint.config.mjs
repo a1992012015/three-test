@@ -10,7 +10,30 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
+  ...compat.plugins("prettier", "import"),
+  {
+    rules: {
+      "prettier/prettier": "error",
+      semi: ["error", "always"],
+      "import/order": [
+        "error",
+        {
+          groups: [
+            ["builtin", "external"],
+            ["internal", "parent", "sibling", "index"],
+          ],
+          "newlines-between": "always",
+        },
+      ],
+      "@typescript-eslint/no-require-imports": [
+        "error",
+        {
+          allow: ["path", "fs", "tailwindcss-animate", "workbox-webpack-plugin"],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;
