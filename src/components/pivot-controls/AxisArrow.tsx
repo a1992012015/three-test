@@ -83,8 +83,8 @@ export const AxisArrow: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }> 
       clickInfo.current = { clickPoint, dir };
       offset0.current = translation.current[axis];
       onDragStart({ component: "Arrow", axis, origin, directions: [dir] });
-      camControls && (camControls.enabled = false);
-      // @ts-ignore - setPointerCapture is not in the type definition
+      if (camControls) camControls.enabled = false;
+      // @ts-expect-error - setPointerCapture is not in the type definition
       e.target.setPointerCapture(e.pointerId);
     },
     [direction, camControls, onDragStart, translation, axis],
@@ -115,8 +115,10 @@ export const AxisArrow: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }> 
       e.stopPropagation();
       clickInfo.current = null;
       onDragEnd();
-      camControls && (camControls.enabled = true);
-      // @ts-ignore - releasePointerCapture & PointerEvent#pointerId is not in the type definition
+      if (camControls) {
+        camControls.enabled = true;
+      }
+      // @ts-expect-error - releasePointerCapture & PointerEvent#pointerId is not in the type definition
       e.target.releasePointerCapture(e.pointerId);
     },
     [camControls, onDragEnd],

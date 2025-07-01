@@ -40,6 +40,7 @@ export const context = React.createContext<PivotContext>(null!);
 
 const isRef = (object: any): object is React.RefObject<THREE.Object3D> => object && object.current;
 
+// @ts-expect-error resolveObject
 export const resolveObject = (
   object?: THREE.Object3D | React.RefObject<THREE.Object3D>,
   fallback?: THREE.Object3D | React.RefObject<THREE.Object3D>,

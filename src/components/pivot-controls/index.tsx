@@ -152,7 +152,6 @@ export const PivotControls = React.forwardRef<THREE.Group, PivotControlsProps>(
       autoTransform = true,
       anchor,
       disableAxes = false,
-      disableSliders = false,
       disableRotations = false,
       activeAxes = [true, true, true],
       offset = [0, 0, 0],
@@ -235,7 +234,7 @@ export const PivotControls = React.forwardRef<THREE.Group, PivotControlsProps>(
         onDragStart: (props: OnDragStartProps) => {
           mL0.copy(ref.current.matrix);
           mW0.copy(ref.current.matrixWorld);
-          onDragStart && onDragStart(props);
+          onDragStart?.(props);
           invalidate();
         },
         onDrag: (mdW: THREE.Matrix4) => {

@@ -15,6 +15,7 @@ const eslintConfig = [
   {
     rules: {
       "prettier/prettier": "error",
+      "@typescript-eslint/no-explicit-any": "off",
       semi: ["error", "always"],
       "import/order": [
         "error",

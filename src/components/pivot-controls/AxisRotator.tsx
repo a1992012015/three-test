@@ -5,7 +5,6 @@ import { Html, Line } from "@react-three/drei";
 import clamp from "lodash.clamp";
 
 import { context } from "./context";
-import { useEffect } from "react";
 
 const clickDir = new THREE.Vector3();
 const intersectionDir = new THREE.Vector3();
@@ -114,8 +113,8 @@ export const AxisRotator: React.FC<{
       const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, origin);
       clickInfo.current = { clickPoint, origin, e1, e2, normal, plane };
       onDragStart({ component: "Rotator", axis, origin, directions: [e1, e2, normal] });
-      camControls && (camControls.enabled = false);
-      // @ts-ignore
+      if (camControls) camControls.enabled = false;
+      // @ts-expect-error setPointerCapture
       e.target.setPointerCapture(e.pointerId);
     },
     [camControls, onDragStart, axis],
@@ -174,8 +173,8 @@ export const AxisRotator: React.FC<{
       angle0.current = angle.current;
       clickInfo.current = null;
       onDragEnd();
-      camControls && (camControls.enabled = true);
-      // @ts-ignore
+      if (camControls) camControls.enabled = true;
+      // @ts-expect-error releasePointerCapture
       e.target.releasePointerCapture(e.pointerId);
     },
     [camControls, onDragEnd],

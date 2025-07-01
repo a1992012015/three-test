@@ -76,7 +76,7 @@ export const SphereScale: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }
       //scale0.current = translation.current[axis]
       onDragStart({ component: "Scale", axis, origin, directions: [dir] });
       if (camControls) camControls.enabled = false;
-      // @ts-ignore - setPointerCapture is not in the type definition
+      // @ts-expect-error - setPointerCapture is not in the type definition
       e.target.setPointerCapture(e.pointerId);
     },
     [direction, camControls, onDragStart, translation, axis, object],
@@ -120,7 +120,7 @@ export const SphereScale: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }
       clickInfo.current = null;
       onDragEnd();
       if (camControls) camControls.enabled = true;
-      // @ts-ignore - releasePointerCapture & PointerEvent#pointerId is not in the type definition
+      // @ts-expect-error - releasePointerCapture & PointerEvent#pointerId is not in the type definition
       e.target.releasePointerCapture(e.pointerId);
     },
     [camControls, onDragEnd],

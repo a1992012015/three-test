@@ -89,8 +89,8 @@ export const PlaneSlider: React.FC<{
       offsetX0.current = translation.current[(axis + 1) % 3];
       offsetY0.current = translation.current[(axis + 2) % 3];
       onDragStart({ component: "Slider", axis, origin, directions: [e1, e2, normal] });
-      camControls && (camControls.enabled = false);
-      // @ts-ignore
+      if (camControls) camControls.enabled = false;
+      // @ts-expect-error setPointerCapture
       e.target.setPointerCapture(e.pointerId);
     },
     [camControls, onDragStart, axis],
@@ -150,8 +150,8 @@ export const PlaneSlider: React.FC<{
       e.stopPropagation();
       clickInfo.current = null;
       onDragEnd();
-      camControls && (camControls.enabled = true);
-      // @ts-ignore
+      if (camControls) camControls.enabled = true;
+      // @ts-expect-error releasePointerCapture
       e.target.releasePointerCapture(e.pointerId);
     },
     [camControls, onDragEnd],
