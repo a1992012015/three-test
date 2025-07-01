@@ -33,6 +33,7 @@ export type PivotContext = {
   depthTest: boolean;
   userData?: { [key: string]: any };
   annotationsClass?: string;
+  object: any;
 };
 
 export const context = React.createContext<PivotContext>(null!);

@@ -3,10 +3,10 @@ import * as THREE from "three";
 import * as React from "react";
 
 import { AxisArrow } from "./AxisArrow";
-import { PlaneSlider } from "./PlaneSlider";
 import { AxisRotator } from "./AxisRotator";
-import { SphereScale } from "./SphereScale";
 import { context, OnDragStartProps, resolveObject } from "./context";
+import { BoundingBox } from "@/components/pivot-controls/BoundingBox";
+import { WithBoundingBox } from "@/components/pivot-controls/WithBoundingBox";
 
 const tV0 = new THREE.Vector3();
 const tV1 = new THREE.Vector3();
@@ -67,6 +67,15 @@ const vPosition = new THREE.Vector3();
 const xDir = new THREE.Vector3(1, 0, 0);
 const yDir = new THREE.Vector3(0, 1, 0);
 const zDir = new THREE.Vector3(0, 0, 1);
+
+const Dir1 = new THREE.Vector3(0, 0, 0);
+const Dir2 = new THREE.Vector3(1, 0, 0);
+const Dir3 = new THREE.Vector3(1, 0, 1);
+const Dir4 = new THREE.Vector3(1, 1, 0);
+const Dir5 = new THREE.Vector3(1, 1, 1);
+const Dir6 = new THREE.Vector3(0, 0, 1);
+const Dir7 = new THREE.Vector3(0, 1, 0);
+const Dir8 = new THREE.Vector3(0, 1, 1);
 
 type PivotControlsProps = {
   /** Scale of the gizmo, 1 */
@@ -266,24 +275,24 @@ export const PivotControls = React.forwardRef<THREE.Group, PivotControlsProps>(
         object,
       }),
       [
-        object,
-        onDragStart,
-        onDrag,
-        onDragEnd,
-        translation,
         translationLimits,
         rotationLimits,
-        depthTest,
+        axisColors,
+        hoveredColor,
+        opacity,
         scale,
         lineWidth,
         fixed,
-        ...axisColors,
-        hoveredColor,
-        opacity,
         displayValues,
+        depthTest,
         userData,
-        autoTransform,
         annotationsClass,
+        object,
+        onDragStart,
+        invalidate,
+        autoTransform,
+        onDrag,
+        onDragEnd,
       ],
     );
 
@@ -311,6 +320,8 @@ export const PivotControls = React.forwardRef<THREE.Group, PivotControlsProps>(
 
     React.useImperativeHandle(fRef, () => ref.current, []);
 
+    console.log("config", config);
+
     return (
       <context.Provider value={config}>
         <group ref={parentRef}>
@@ -320,19 +331,29 @@ export const PivotControls = React.forwardRef<THREE.Group, PivotControlsProps>(
               {!disableAxes && activeAxes[1] && <AxisArrow axis={1} direction={yDir} />}
               {!disableAxes && activeAxes[2] && <AxisArrow axis={2} direction={zDir} />}
 
-              {!disableAxes && activeAxes[0] && <SphereScale axis={0} direction={xDir} />}
-              {!disableAxes && activeAxes[1] && <SphereScale axis={1} direction={yDir} />}
-              {!disableAxes && activeAxes[2] && <SphereScale axis={2} direction={zDir} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir1} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir2} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir3} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir4} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir5} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir6} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir7} />}
+              {!disableAxes && activeAxes[0] && <BoundingBox direction={Dir8} />}
 
-              {!disableSliders && activeAxes[0] && activeAxes[1] && (
-                <PlaneSlider axis={2} dir1={xDir} dir2={yDir} />
-              )}
-              {!disableSliders && activeAxes[0] && activeAxes[2] && (
-                <PlaneSlider axis={1} dir1={zDir} dir2={xDir} />
-              )}
-              {!disableSliders && activeAxes[2] && activeAxes[1] && (
-                <PlaneSlider axis={0} dir1={yDir} dir2={zDir} />
-              )}
+              {/*{!disableAxes && activeAxes[0] && <SphereScale axis={0} direction={xDir} />}*/}
+              {/*{!disableAxes && activeAxes[1] && <SphereScale axis={1} direction={yDir} />}*/}
+              {/*{!disableAxes && activeAxes[2] && <SphereScale axis={2} direction={zDir} />}*/}
+
+              {/*{!disableSliders && activeAxes[0] && activeAxes[1] && (*/}
+              {/*  <PlaneSlider axis={2} dir1={xDir} dir2={yDir} />*/}
+              {/*)}*/}
+              {/*{!disableSliders && activeAxes[0] && activeAxes[2] && (*/}
+              {/*  <PlaneSlider axis={1} dir1={zDir} dir2={xDir} />*/}
+              {/*)}*/}
+              {/*{!disableSliders && activeAxes[2] && activeAxes[1] && (*/}
+              {/*  <PlaneSlider axis={0} dir1={yDir} dir2={zDir} />*/}
+              {/*)}*/}
+
               {!disableRotations && activeAxes[0] && activeAxes[1] && (
                 <AxisRotator axis={2} dir1={xDir} dir2={yDir} />
               )}
@@ -343,7 +364,10 @@ export const PivotControls = React.forwardRef<THREE.Group, PivotControlsProps>(
                 <AxisRotator axis={0} dir1={yDir} dir2={zDir} />
               )}
             </group>
-            <group ref={childrenRef}>{children}</group>
+
+            <group ref={childrenRef}>
+              <WithBoundingBox>{children}</WithBoundingBox>
+            </group>
           </group>
         </group>
       </context.Provider>

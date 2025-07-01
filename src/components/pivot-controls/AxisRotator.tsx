@@ -5,6 +5,7 @@ import { Html, Line } from "@react-three/drei";
 import clamp from "lodash.clamp";
 
 import { context } from "./context";
+import { useEffect } from "react";
 
 const clickDir = new THREE.Vector3();
 const intersectionDir = new THREE.Vector3();
@@ -135,7 +136,6 @@ export const AxisRotator: React.FC<{
         let deltaAngle = calculateAngle(clickPoint, intersection, origin, e1, e2);
         let degrees = toDegrees(deltaAngle);
 
-        // @ts-ignore
         if (e.shiftKey) {
           degrees = Math.round(degrees / 10) * 10;
           deltaAngle = toRadians(degrees);
@@ -158,6 +158,7 @@ export const AxisRotator: React.FC<{
         rotMatrix.makeRotationAxis(normal, deltaAngle);
         posNew.copy(origin).applyMatrix4(rotMatrix).sub(origin).negate();
         rotMatrix.setPosition(posNew);
+
         onDrag(rotMatrix);
       }
     },
