@@ -1,13 +1,13 @@
 import * as React from "react";
 import * as THREE from "three";
 import { ThreeEvent, useThree } from "@react-three/fiber";
-import { Html, Line } from "@react-three/drei";
-import clamp from "lodash.clamp";
 
+import { Line } from "../core/line";
+import { Html } from "../Html";
 import { context } from "./context";
 
-const clickDir = new THREE.Vector3();
-const intersectionDir = new THREE.Vector3();
+const clickDir = /* @__PURE__ */ new THREE.Vector3();
+const intersectionDir = /* @__PURE__ */ new THREE.Vector3();
 
 const toDegrees = (radians: number) => (radians * 180) / Math.PI;
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -53,10 +53,10 @@ const minimizeAngle = (angle: number) => {
   return result;
 };
 
-const rotMatrix = new THREE.Matrix4();
-const posNew = new THREE.Vector3();
-const ray = new THREE.Ray();
-const intersection = new THREE.Vector3();
+const rotMatrix = /* @__PURE__ */ new THREE.Matrix4();
+const posNew = /* @__PURE__ */ new THREE.Vector3();
+const ray = /* @__PURE__ */ new THREE.Ray();
+const intersection = /* @__PURE__ */ new THREE.Vector3();
 
 export const AxisRotator: React.FC<{
   dir1: THREE.Vector3;
@@ -65,6 +65,7 @@ export const AxisRotator: React.FC<{
 }> = ({ dir1, dir2, axis }) => {
   const {
     rotationLimits,
+    annotations,
     annotationsClass,
     depthTest,
     scale,
@@ -72,7 +73,6 @@ export const AxisRotator: React.FC<{
     fixed,
     axisColors,
     hoveredColor,
-    displayValues,
     opacity,
     onDragStart,
     onDrag,
@@ -80,8 +80,9 @@ export const AxisRotator: React.FC<{
     userData,
   } = React.useContext(context);
 
-  // @ts-expect-error new in @react-three/fiber@7.0.5
-  const camControls = useThree((state) => state.controls) as { enabled: boolean };
+  const camControls = useThree((state) => state.controls) as unknown as
+    | { enabled: boolean }
+    | undefined;
   const divRef = React.useRef<HTMLDivElement>(null!);
   const objRef = React.useRef<THREE.Group>(null!);
   const angle0 = React.useRef<number>(0);
@@ -98,7 +99,7 @@ export const AxisRotator: React.FC<{
 
   const onPointerDown = React.useCallback(
     (e: ThreeEvent<PointerEvent>) => {
-      if (displayValues) {
+      if (annotations) {
         divRef.current.innerText = `${toDegrees(angle.current).toFixed(0)}º`;
         divRef.current.style.display = "block";
       }
@@ -113,11 +114,13 @@ export const AxisRotator: React.FC<{
       const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(normal, origin);
       clickInfo.current = { clickPoint, origin, e1, e2, normal, plane };
       onDragStart({ component: "Rotator", axis, origin, directions: [e1, e2, normal] });
-      if (camControls) camControls.enabled = false;
-      // @ts-expect-error setPointerCapture
+      if (camControls) {
+        camControls.enabled = false;
+      }
+      // @ts-expect-error - setPointerCapture is not in the type definition
       e.target.setPointerCapture(e.pointerId);
     },
-    [camControls, onDragStart, axis],
+    [annotations, camControls, onDragStart, axis],
   );
 
   const onPointerMove = React.useCallback(
@@ -143,41 +146,46 @@ export const AxisRotator: React.FC<{
         if (min !== undefined && max !== undefined && max - min < 2 * Math.PI) {
           deltaAngle = minimizeAngle(deltaAngle);
           deltaAngle = deltaAngle > Math.PI ? deltaAngle - 2 * Math.PI : deltaAngle;
-          deltaAngle = clamp(deltaAngle, min - angle0.current, max - angle0.current);
+          deltaAngle = THREE.MathUtils.clamp(
+            deltaAngle,
+            min - angle0.current,
+            max - angle0.current,
+          );
           angle.current = angle0.current + deltaAngle;
         } else {
           angle.current = minimizeAngle(angle0.current + deltaAngle);
           angle.current = angle.current > Math.PI ? angle.current - 2 * Math.PI : angle.current;
         }
 
-        if (displayValues) {
+        if (annotations) {
           degrees = toDegrees(angle.current);
           divRef.current.innerText = `${degrees.toFixed(0)}º`;
         }
         rotMatrix.makeRotationAxis(normal, deltaAngle);
         posNew.copy(origin).applyMatrix4(rotMatrix).sub(origin).negate();
         rotMatrix.setPosition(posNew);
-
         onDrag(rotMatrix);
       }
     },
-    [onDrag, isHovered, rotationLimits, axis],
+    [annotations, onDrag, isHovered, rotationLimits, axis],
   );
 
   const onPointerUp = React.useCallback(
     (e: ThreeEvent<PointerEvent>) => {
-      if (displayValues) {
+      if (annotations) {
         divRef.current.style.display = "none";
       }
       e.stopPropagation();
       angle0.current = angle.current;
       clickInfo.current = null;
       onDragEnd();
-      if (camControls) camControls.enabled = true;
-      // @ts-expect-error releasePointerCapture
+      if (camControls) {
+        camControls.enabled = true;
+      }
+      // @ts-expect-error - releasePointerCapture & PointerEvent#pointerId is not in the type definition
       e.target.releasePointerCapture(e.pointerId);
     },
-    [camControls, onDragEnd],
+    [annotations, camControls, onDragEnd],
   );
 
   const onPointerOut = React.useCallback((e: any) => {
@@ -213,20 +221,22 @@ export const AxisRotator: React.FC<{
       matrix={matrixL}
       matrixAutoUpdate={false}
     >
-      <Html position={[r, r, 0]}>
-        <div
-          style={{
-            display: "none",
-            background: "#151520",
-            color: "white",
-            padding: "6px 8px",
-            borderRadius: 7,
-            whiteSpace: "nowrap",
-          }}
-          className={annotationsClass}
-          ref={divRef}
-        />
-      </Html>
+      {annotations && (
+        <Html position={[r, r, 0]}>
+          <div
+            style={{
+              display: "none",
+              background: "#151520",
+              color: "white",
+              padding: "6px 8px",
+              borderRadius: 7,
+              whiteSpace: "nowrap",
+            }}
+            className={annotationsClass}
+            ref={divRef}
+          />
+        </Html>
+      )}
       {/* The invisible mesh being raycast */}
       <Line points={arc} lineWidth={lineWidth * 4} visible={false} userData={userData} />
       {/* The visible mesh */}
@@ -236,10 +246,12 @@ export const AxisRotator: React.FC<{
         depthTest={depthTest}
         points={arc}
         lineWidth={lineWidth}
+        side={THREE.DoubleSide}
         color={(isHovered ? hoveredColor : axisColors[axis]) as any}
         opacity={opacity}
         polygonOffset
         polygonOffsetFactor={-10}
+        fog={false}
       />
     </group>
   );

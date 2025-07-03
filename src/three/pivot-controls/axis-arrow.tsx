@@ -2,12 +2,12 @@ import * as React from "react";
 import * as THREE from "three";
 import { ThreeEvent, useThree } from "@react-three/fiber";
 
-import { context, resolveObject } from "./context";
+import { Line } from "../core/line";
+import { Html } from "../Html";
+import { context } from "./context";
 
-const vec1 = new THREE.Vector3();
-const vec2 = new THREE.Vector3();
-const upV = new THREE.Vector3(0, 1, 0);
-const scaleMatrix = new THREE.Matrix4();
+const vec1 = /* @__PURE__ */ new THREE.Vector3();
+const vec2 = /* @__PURE__ */ new THREE.Vector3();
 
 export const calculateOffset = (
   clickPoint: THREE.Vector3,
@@ -18,7 +18,11 @@ export const calculateOffset = (
   const e1 = normal.dot(normal);
   const e2 = normal.dot(clickPoint) - normal.dot(rayStart);
   const e3 = normal.dot(rayDir);
-  if (e3 === 0) return -e2 / e1;
+
+  if (e3 === 0) {
+    return -e2 / e1;
+  }
+
   vec1
     .copy(rayDir)
     .multiplyScalar(e1 / e3)
@@ -28,16 +32,22 @@ export const calculateOffset = (
     .multiplyScalar(e2 / e3)
     .add(rayStart)
     .sub(clickPoint);
+
   return -vec1.dot(vec2) / vec1.dot(vec1);
 };
 
-export const SphereScale: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }> = ({
+const upV = /* @__PURE__ */ new THREE.Vector3(0, 1, 0);
+const offsetMatrix = /* @__PURE__ */ new THREE.Matrix4();
+
+export const AxisArrow: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }> = ({
   direction,
   axis,
 }) => {
   const {
     translation,
     translationLimits,
+    annotations,
+    annotationsClass,
     depthTest,
     scale,
     lineWidth,
@@ -49,81 +59,82 @@ export const SphereScale: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }
     onDrag,
     onDragEnd,
     userData,
-    object,
   } = React.useContext(context);
 
-  // @ts-expect-error new in @react-three/fiber@7.0.5
-  const camControls = useThree((state) => state.controls) as { enabled: boolean };
+  const camControls = useThree((state) => state.controls) as unknown as
+    | { enabled: boolean }
+    | undefined;
+  const divRef = React.useRef<HTMLDivElement>(null!);
   const objRef = React.useRef<THREE.Group>(null!);
   const clickInfo = React.useRef<{ clickPoint: THREE.Vector3; dir: THREE.Vector3 } | null>(null);
-  const scale0 = React.useRef<number>(1);
+  const offset0 = React.useRef<number>(0);
   const [isHovered, setIsHovered] = React.useState(false);
 
-  const [targetOrigin] = React.useState(() => new THREE.Vector3());
   const onPointerDown = React.useCallback(
     (e: ThreeEvent<PointerEvent>) => {
+      if (annotations) {
+        divRef.current.innerText = `${translation.current[axis].toFixed(2)}`;
+        divRef.current.style.display = "block";
+      }
       e.stopPropagation();
-
-      const target = resolveObject(object);
-      if (target) targetOrigin.setFromMatrixPosition(target.matrix);
-      else targetOrigin.set(0, 0, 0);
-
-      const clickPoint = e.point.clone();
       const rotation = new THREE.Matrix4().extractRotation(objRef.current.matrixWorld);
+      const clickPoint = e.point.clone();
       const origin = new THREE.Vector3().setFromMatrixPosition(objRef.current.matrixWorld);
       const dir = direction.clone().applyMatrix4(rotation).normalize();
       clickInfo.current = { clickPoint, dir };
-      //scale0.current = translation.current[axis]
-      onDragStart({ component: "Scale", axis, origin, directions: [dir] });
-      if (camControls) camControls.enabled = false;
+      offset0.current = translation.current[axis];
+      onDragStart({ component: "Arrow", axis, origin, directions: [dir] });
+      if (camControls) {
+        camControls.enabled = false;
+      }
       // @ts-expect-error - setPointerCapture is not in the type definition
       e.target.setPointerCapture(e.pointerId);
     },
-    [direction, camControls, onDragStart, translation, axis, object],
+    [annotations, direction, camControls, onDragStart, translation, axis],
   );
 
-  const vScale = new THREE.Vector3();
   const onPointerMove = React.useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
       if (!isHovered) setIsHovered(true);
+
       if (clickInfo.current) {
         const { clickPoint, dir } = clickInfo.current;
         const [min, max] = translationLimits?.[axis] || [undefined, undefined];
+
         let offset = calculateOffset(clickPoint, dir, e.ray.origin, e.ray.direction);
-        if (min !== undefined) offset = Math.max(offset, min - scale0.current);
-        if (max !== undefined) offset = Math.min(offset, max - scale0.current);
-
-        vScale.setFromMatrixScale(objRef.current.matrix).add({
-          x: dir.x * offset,
-          y: dir.y * offset,
-          z: dir.z * offset,
-        } as THREE.Vector3);
-
-        console.log(targetOrigin);
-        scale0.current = scale0.current + offset;
-        scaleMatrix.makeScale(vScale.x, vScale.y, vScale.z);
-        scaleMatrix.setPosition(
-          targetOrigin.x - dir.x * offset,
-          targetOrigin.y - dir.y * offset,
-          targetOrigin.z - dir.z * offset,
-        );
-        onDrag(scaleMatrix);
+        if (min !== undefined) {
+          offset = Math.max(offset, min - offset0.current);
+        }
+        if (max !== undefined) {
+          offset = Math.min(offset, max - offset0.current);
+        }
+        translation.current[axis] = offset0.current + offset;
+        if (annotations) {
+          divRef.current.innerText = `${translation.current[axis].toFixed(2)}`;
+        }
+        offsetMatrix.makeTranslation(dir.x * offset, dir.y * offset, dir.z * offset);
+        onDrag(offsetMatrix);
       }
     },
-    [onDrag, isHovered, translation, translationLimits, axis],
+    [annotations, onDrag, isHovered, translation, translationLimits, axis],
   );
 
   const onPointerUp = React.useCallback(
     (e: ThreeEvent<PointerEvent>) => {
+      if (annotations) {
+        divRef.current.style.display = "none";
+      }
       e.stopPropagation();
       clickInfo.current = null;
       onDragEnd();
-      if (camControls) camControls.enabled = true;
+      if (camControls) {
+        camControls.enabled = true;
+      }
       // @ts-expect-error - releasePointerCapture & PointerEvent#pointerId is not in the type definition
       e.target.releasePointerCapture(e.pointerId);
     },
-    [camControls, onDragEnd],
+    [annotations, camControls, onDragEnd],
   );
 
   const onPointerOut = React.useCallback((e: ThreeEvent<PointerEvent>) => {
@@ -155,9 +166,53 @@ export const SphereScale: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }
         onPointerUp={onPointerUp}
         onPointerOut={onPointerOut}
       >
+        {annotations && (
+          <Html position={[0, -coneLength, 0]}>
+            <div
+              style={{
+                display: "none",
+                background: "#151520",
+                color: "white",
+                padding: "6px 8px",
+                borderRadius: 7,
+                whiteSpace: "nowrap",
+              }}
+              className={annotationsClass}
+              ref={divRef}
+            />
+          </Html>
+        )}
         {/* The invisible mesh being raycast */}
-        <mesh position={[0, (cylinderLength + coneLength) * 1.15, 0]} userData={userData}>
-          <sphereGeometry args={[coneWidth * 1.4]} />
+        <mesh
+          visible={false}
+          position={[0, (cylinderLength + coneLength) / 2.0, 0]}
+          userData={userData}
+        >
+          <cylinderGeometry
+            args={[coneWidth * 1.4, coneWidth * 1.4, cylinderLength + coneLength, 8, 1]}
+          />
+        </mesh>
+        {/* The visible mesh */}
+        <Line
+          transparent
+          raycast={() => null}
+          depthTest={depthTest}
+          points={[0, 0, 0, 0, cylinderLength, 0] as any}
+          lineWidth={lineWidth}
+          side={THREE.DoubleSide}
+          color={color_ as any}
+          opacity={opacity}
+          polygonOffset
+          renderOrder={1}
+          polygonOffsetFactor={-10}
+          fog={false}
+        />
+        <mesh
+          raycast={() => null}
+          position={[0, cylinderLength + coneLength / 2.0, 0]}
+          renderOrder={500}
+        >
+          <coneGeometry args={[coneWidth, coneLength, 24, 1]} />
           <meshBasicMaterial
             transparent
             depthTest={depthTest}
@@ -165,6 +220,7 @@ export const SphereScale: React.FC<{ direction: THREE.Vector3; axis: 0 | 1 | 2 }
             opacity={opacity}
             polygonOffset
             polygonOffsetFactor={-10}
+            fog={false}
           />
         </mesh>
       </group>

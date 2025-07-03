@@ -1,8 +1,9 @@
 import * as React from "react";
 import * as THREE from "three";
 import { ThreeEvent, useThree } from "@react-three/fiber";
-import { Html, Line } from "@react-three/drei";
 
+import { Line } from "../core/line";
+import { Html } from "../Html";
 import { context } from "./context";
 
 const decomposeIntoBasis = (e1: THREE.Vector3, e2: THREE.Vector3, offset: THREE.Vector3) => {
@@ -29,9 +30,9 @@ const decomposeIntoBasis = (e1: THREE.Vector3, e2: THREE.Vector3, offset: THREE.
   return [x, y];
 };
 
-const ray = new THREE.Ray();
-const intersection = new THREE.Vector3();
-const offsetMatrix = new THREE.Matrix4();
+const ray = /* @__PURE__ */ new THREE.Ray();
+const intersection = /* @__PURE__ */ new THREE.Vector3();
+const offsetMatrix = /* @__PURE__ */ new THREE.Matrix4();
 
 export const PlaneSlider: React.FC<{
   dir1: THREE.Vector3;
@@ -41,6 +42,7 @@ export const PlaneSlider: React.FC<{
   const {
     translation,
     translationLimits,
+    annotations,
     annotationsClass,
     depthTest,
     scale,
@@ -48,7 +50,6 @@ export const PlaneSlider: React.FC<{
     fixed,
     axisColors,
     hoveredColor,
-    displayValues,
     opacity,
     onDragStart,
     onDrag,
@@ -56,8 +57,9 @@ export const PlaneSlider: React.FC<{
     userData,
   } = React.useContext(context);
 
-  // @ts-expect-error new in @react-three/fiber@7.0.5
-  const camControls = useThree((state) => state.controls) as { enabled: boolean };
+  const camControls = useThree((state) => state.controls) as unknown as
+    | { enabled: boolean }
+    | undefined;
   const divRef = React.useRef<HTMLDivElement>(null!);
   const objRef = React.useRef<THREE.Group>(null!);
   const clickInfo = React.useRef<{
@@ -72,8 +74,10 @@ export const PlaneSlider: React.FC<{
 
   const onPointerDown = React.useCallback(
     (e: ThreeEvent<PointerEvent>) => {
-      if (displayValues) {
-        divRef.current.innerText = `${translation.current[(axis + 1) % 3].toFixed(2)}, ${translation.current[(axis + 2) % 3].toFixed(2)}`;
+      if (annotations) {
+        divRef.current.innerText = `${translation.current[(axis + 1) % 3].toFixed(2)}, ${translation.current[
+          (axis + 2) % 3
+        ].toFixed(2)}`;
         divRef.current.style.display = "block";
       }
       e.stopPropagation();
@@ -89,11 +93,13 @@ export const PlaneSlider: React.FC<{
       offsetX0.current = translation.current[(axis + 1) % 3];
       offsetY0.current = translation.current[(axis + 2) % 3];
       onDragStart({ component: "Slider", axis, origin, directions: [e1, e2, normal] });
-      if (camControls) camControls.enabled = false;
-      // @ts-expect-error setPointerCapture
+      if (camControls) {
+        camControls.enabled = false;
+      }
+      // @ts-expect-error - setPointerCapture is not in the type definition
       e.target.setPointerCapture(e.pointerId);
     },
-    [camControls, onDragStart, axis],
+    [annotations, translation, axis, onDragStart, camControls],
   );
 
   const onPointerMove = React.useCallback(
@@ -128,8 +134,10 @@ export const PlaneSlider: React.FC<{
         }
         translation.current[(axis + 1) % 3] = offsetX0.current + offsetX;
         translation.current[(axis + 2) % 3] = offsetY0.current + offsetY;
-        if (displayValues) {
-          divRef.current.innerText = `${translation.current[(axis + 1) % 3].toFixed(2)}, ${translation.current[(axis + 2) % 3].toFixed(2)}`;
+        if (annotations) {
+          divRef.current.innerText = `${translation.current[(axis + 1) % 3].toFixed(2)}, ${translation.current[
+            (axis + 2) % 3
+          ].toFixed(2)}`;
         }
         offsetMatrix.makeTranslation(
           offsetX * e1.x + offsetY * e2.x,
@@ -139,22 +147,24 @@ export const PlaneSlider: React.FC<{
         onDrag(offsetMatrix);
       }
     },
-    [onDrag, isHovered, translation, translationLimits, axis],
+    [annotations, onDrag, isHovered, translation, translationLimits, axis],
   );
 
   const onPointerUp = React.useCallback(
     (e: ThreeEvent<PointerEvent>) => {
-      if (displayValues) {
+      if (annotations) {
         divRef.current.style.display = "none";
       }
       e.stopPropagation();
       clickInfo.current = null;
       onDragEnd();
-      if (camControls) camControls.enabled = true;
-      // @ts-expect-error releasePointerCapture
+      if (camControls) {
+        camControls.enabled = true;
+      }
+      // @ts-expect-error - releasePointerCapture & PointerEvent#pointerId is not in the type definition
       e.target.releasePointerCapture(e.pointerId);
     },
-    [camControls, onDragEnd],
+    [annotations, camControls, onDragEnd],
   );
 
   const onPointerOut = React.useCallback((e: ThreeEvent<PointerEvent>) => {
@@ -185,20 +195,22 @@ export const PlaneSlider: React.FC<{
 
   return (
     <group ref={objRef} matrix={matrixL} matrixAutoUpdate={false}>
-      <Html position={[0, 0, 0]}>
-        <div
-          style={{
-            display: "none",
-            background: "#151520",
-            color: "white",
-            padding: "6px 8px",
-            borderRadius: 7,
-            whiteSpace: "nowrap",
-          }}
-          className={annotationsClass}
-          ref={divRef}
-        />
-      </Html>
+      {annotations && (
+        <Html position={[0, 0, 0]}>
+          <div
+            style={{
+              display: "none",
+              background: "#151520",
+              color: "white",
+              padding: "6px 8px",
+              borderRadius: 7,
+              whiteSpace: "nowrap",
+            }}
+            className={annotationsClass}
+            ref={divRef}
+          />
+        </Html>
+      )}
       <group position={[pos1 * 1.7, pos1 * 1.7, 0]}>
         <mesh
           visible={true}
@@ -217,6 +229,7 @@ export const PlaneSlider: React.FC<{
             polygonOffset
             polygonOffsetFactor={-10}
             side={THREE.DoubleSide}
+            fog={false}
           />
         </mesh>
         <Line
@@ -230,6 +243,7 @@ export const PlaneSlider: React.FC<{
           polygonOffset
           polygonOffsetFactor={-10}
           userData={userData}
+          fog={false}
         />
       </group>
     </group>
