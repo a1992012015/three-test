@@ -168,292 +168,292 @@ export interface HtmlProps
 }
 
 export const Html: ForwardRefComponent<HtmlProps, HTMLDivElement> =
-  /* @__PURE__ */ React.forwardRef(
-    (
-      {
-        children,
-        eps = 0.001,
-        style,
-        className,
-        prepend,
-        center,
-        fullscreen,
-        portal,
-        distanceFactor,
-        sprite = false,
-        transform = false,
-        occlude,
-        onOcclude,
-        castShadow,
-        receiveShadow,
-        material,
-        geometry,
-        zIndexRange = [16777271, 0],
-        calculatePosition = defaultCalculatePosition,
-        as = "div",
-        wrapperClass,
-        pointerEvents = "auto",
-        ...props
-      }: HtmlProps,
-      ref: React.Ref<HTMLDivElement>,
-    ) => {
-      const { gl, camera, scene, size, raycaster, events, viewport } = useThree();
+  /* @__PURE__ */ React.forwardRef(function Html(
+    {
+      children,
+      eps = 0.001,
+      style,
+      className,
+      prepend,
+      center,
+      fullscreen,
+      portal,
+      distanceFactor,
+      sprite = false,
+      transform = false,
+      occlude,
+      onOcclude,
+      castShadow,
+      receiveShadow,
+      material,
+      geometry,
+      zIndexRange = [16777271, 0],
+      calculatePosition = defaultCalculatePosition,
+      as = "div",
+      wrapperClass,
+      pointerEvents = "auto",
+      ...props
+    }: HtmlProps,
+    ref: React.Ref<HTMLDivElement>,
+  ) {
+    const { gl, camera, scene, size, raycaster, events, viewport } = useThree();
 
-      const [el] = React.useState(() => document.createElement(as));
-      const root = React.useRef<ReactDOM.Root>(null);
-      const group = React.useRef<Group>(null!);
-      const oldZoom = React.useRef(0);
-      const oldPosition = React.useRef([0, 0]);
-      const transformOuterRef = React.useRef<HTMLDivElement>(null!);
-      const transformInnerRef = React.useRef<HTMLDivElement>(null!);
-      // Append to the connected element, which makes HTML work with views
-      const target = (portal?.current ||
-        events.connected ||
-        gl.domElement.parentNode) as HTMLElement;
+    const [el] = React.useState(() => document.createElement(as));
+    const root = React.useRef<ReactDOM.Root>(null);
+    const group = React.useRef<Group>(null!);
+    const oldZoom = React.useRef(0);
+    const oldPosition = React.useRef([0, 0]);
+    const transformOuterRef = React.useRef<HTMLDivElement>(null!);
+    const transformInnerRef = React.useRef<HTMLDivElement>(null!);
+    // Append to the connected element, which makes HTML work with views
+    const target = (portal?.current || events.connected || gl.domElement.parentNode) as HTMLElement;
 
-      const occlusionMeshRef = React.useRef<Mesh>(null!);
-      const isMeshSizeSet = React.useRef<boolean>(false);
+    const occlusionMeshRef = React.useRef<Mesh>(null!);
+    const isMeshSizeSet = React.useRef<boolean>(false);
 
-      const isRayCastOcclusion = React.useMemo(() => {
-        return (
-          (occlude && occlude !== "blending") ||
-          (Array.isArray(occlude) && occlude.length && isRefObject(occlude[0]))
-        );
-      }, [occlude]);
+    const isRayCastOcclusion = React.useMemo(() => {
+      return (
+        (occlude && occlude !== "blending") ||
+        (Array.isArray(occlude) && occlude.length && isRefObject(occlude[0]))
+      );
+    }, [occlude]);
 
-      React.useLayoutEffect(() => {
-        const el = gl.domElement as HTMLCanvasElement;
+    React.useLayoutEffect(() => {
+      const el = gl.domElement as HTMLCanvasElement;
 
-        if (occlude && occlude === "blending") {
-          el.style.zIndex = `${Math.floor(zIndexRange[0] / 2)}`;
-          el.style.position = "absolute";
-          el.style.pointerEvents = "none";
-        } else {
-          el.style.zIndex = null!;
-          el.style.position = null!;
-          el.style.pointerEvents = null!;
-        }
-      }, [occlude]);
+      if (occlude && occlude === "blending") {
+        el.style.zIndex = `${Math.floor(zIndexRange[0] / 2)}`;
+        el.style.position = "absolute";
+        el.style.pointerEvents = "none";
+      } else {
+        el.style.zIndex = null!;
+        el.style.position = null!;
+        el.style.pointerEvents = null!;
+      }
+    }, [occlude]);
 
-      React.useLayoutEffect(() => {
-        if (group.current) {
-          const currentRoot = (root.current = ReactDOM.createRoot(el));
-          scene.updateMatrixWorld();
-          if (transform) {
-            el.style.cssText = `position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;`;
-          } else {
-            const vec = calculatePosition(group.current, camera, size);
-            el.style.cssText = `position:absolute;top:0;left:0;transform:translate3d(${vec[0]}px,${vec[1]}px,0);transform-origin:0 0;`;
-          }
-          if (target) {
-            if (prepend) target.prepend(el);
-            else target.appendChild(el);
-          }
-          return () => {
-            if (target) target.removeChild(el);
-            currentRoot.unmount();
-          };
-        }
-      }, [target, transform]);
-
-      React.useLayoutEffect(() => {
-        if (wrapperClass) el.className = wrapperClass;
-      }, [wrapperClass]);
-
-      const styles: React.CSSProperties = React.useMemo(() => {
+    React.useLayoutEffect(() => {
+      if (group.current) {
+        const currentRoot = (root.current = ReactDOM.createRoot(el));
+        scene.updateMatrixWorld();
         if (transform) {
-          return {
-            position: "absolute",
-            top: 0,
-            left: 0,
+          el.style.cssText = `position:absolute;top:0;left:0;pointer-events:none;overflow:hidden;`;
+        } else {
+          const vec = calculatePosition(group.current, camera, size);
+          el.style.cssText = `position:absolute;top:0;left:0;transform:translate3d(${vec[0]}px,${vec[1]}px,0);transform-origin:0 0;`;
+        }
+        if (target) {
+          if (prepend) target.prepend(el);
+          else target.appendChild(el);
+        }
+        return () => {
+          if (target) target.removeChild(el);
+          currentRoot.unmount();
+        };
+      }
+    }, [target, transform]);
+
+    React.useLayoutEffect(() => {
+      if (wrapperClass) el.className = wrapperClass;
+    }, [wrapperClass]);
+
+    const styles: React.CSSProperties = React.useMemo(() => {
+      if (transform) {
+        return {
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: size.width,
+          height: size.height,
+          transformStyle: "preserve-3d",
+          pointerEvents: "none",
+        };
+      } else {
+        return {
+          position: "absolute",
+          transform: center ? "translate3d(-50%,-50%,0)" : "none",
+          ...(fullscreen && {
+            top: -size.height / 2,
+            left: -size.width / 2,
             width: size.width,
             height: size.height,
-            transformStyle: "preserve-3d",
-            pointerEvents: "none",
-          };
-        } else {
-          return {
-            position: "absolute",
-            transform: center ? "translate3d(-50%,-50%,0)" : "none",
-            ...(fullscreen && {
-              top: -size.height / 2,
-              left: -size.width / 2,
-              width: size.width,
-              height: size.height,
-            }),
-            ...style,
-          };
-        }
-      }, [style, center, fullscreen, size, transform]);
+          }),
+          ...style,
+        };
+      }
+    }, [style, center, fullscreen, size, transform]);
 
-      const transformInnerStyles: React.CSSProperties = React.useMemo(
-        () => ({ position: "absolute", pointerEvents }),
-        [pointerEvents],
-      );
+    const transformInnerStyles: React.CSSProperties = React.useMemo(
+      () => ({ position: "absolute", pointerEvents }),
+      [pointerEvents],
+    );
 
-      React.useLayoutEffect(() => {
-        isMeshSizeSet.current = false;
+    React.useLayoutEffect(() => {
+      isMeshSizeSet.current = false;
 
-        if (transform) {
-          root.current?.render(
-            <div ref={transformOuterRef} style={styles}>
-              <div ref={transformInnerRef} style={transformInnerStyles}>
-                <div ref={ref} className={className} style={style} children={children} />
+      if (transform) {
+        root.current?.render(
+          <div ref={transformOuterRef} style={styles}>
+            <div ref={transformInnerRef} style={transformInnerStyles}>
+              <div ref={ref} className={className} style={style}>
+                {children}
               </div>
-            </div>,
-          );
-        } else {
-          root.current?.render(
-            <div ref={ref} style={styles} className={className} children={children} />,
-          );
-        }
-      });
+            </div>
+          </div>,
+        );
+      } else {
+        root.current?.render(
+          <div ref={ref} style={styles} className={className}>
+            {children}
+          </div>,
+        );
+      }
+    });
 
-      const visible = React.useRef(true);
+    const visible = React.useRef(true);
 
-      useFrame((gl) => {
-        if (group.current) {
-          camera.updateMatrixWorld();
-          group.current.updateWorldMatrix(true, false);
-          const vec = transform
-            ? oldPosition.current
-            : calculatePosition(group.current, camera, size);
+    useFrame((gl) => {
+      if (group.current) {
+        camera.updateMatrixWorld();
+        group.current.updateWorldMatrix(true, false);
+        const vec = transform
+          ? oldPosition.current
+          : calculatePosition(group.current, camera, size);
 
-          if (
-            transform ||
-            Math.abs(oldZoom.current - camera.zoom) > eps ||
-            Math.abs(oldPosition.current[0] - vec[0]) > eps ||
-            Math.abs(oldPosition.current[1] - vec[1]) > eps
-          ) {
-            const isBehindCamera = isObjectBehindCamera(group.current, camera);
-            let raytraceTarget: null | undefined | boolean | Object3D[] = false;
+        if (
+          transform ||
+          Math.abs(oldZoom.current - camera.zoom) > eps ||
+          Math.abs(oldPosition.current[0] - vec[0]) > eps ||
+          Math.abs(oldPosition.current[1] - vec[1]) > eps
+        ) {
+          const isBehindCamera = isObjectBehindCamera(group.current, camera);
+          let raytraceTarget: null | undefined | boolean | Object3D[] = false;
 
-            if (isRayCastOcclusion) {
-              if (Array.isArray(occlude)) {
-                raytraceTarget = occlude.map((item) => item.current) as Object3D[];
-              } else if (occlude !== "blending") {
-                raytraceTarget = [scene];
-              }
+          if (isRayCastOcclusion) {
+            if (Array.isArray(occlude)) {
+              raytraceTarget = occlude.map((item) => item.current) as Object3D[];
+            } else if (occlude !== "blending") {
+              raytraceTarget = [scene];
             }
-
-            const previouslyVisible = visible.current;
-            if (raytraceTarget) {
-              const isvisible = isObjectVisible(group.current, camera, raycaster, raytraceTarget);
-              visible.current = isvisible && !isBehindCamera;
-            } else {
-              visible.current = !isBehindCamera;
-            }
-
-            if (previouslyVisible !== visible.current) {
-              if (onOcclude) onOcclude(!visible.current);
-              else el.style.display = visible.current ? "block" : "none";
-            }
-
-            const halfRange = Math.floor(zIndexRange[0] / 2);
-            const zRange = occlude
-              ? isRayCastOcclusion //
-                ? [zIndexRange[0], halfRange]
-                : [halfRange - 1, 0]
-              : zIndexRange;
-
-            el.style.zIndex = `${objectZIndex(group.current, camera, zRange)}`;
-
-            if (transform) {
-              const [widthHalf, heightHalf] = [size.width / 2, size.height / 2];
-              const fov = camera.projectionMatrix.elements[5] * heightHalf;
-              const { isOrthographicCamera, top, left, bottom, right } =
-                camera as OrthographicCamera;
-              const cameraMatrix = getCameraCSSMatrix(camera.matrixWorldInverse);
-              const cameraTransform = isOrthographicCamera
-                ? `scale(${fov})translate(${epsilon(-(right + left) / 2)}px,${epsilon((top + bottom) / 2)}px)`
-                : `translateZ(${fov}px)`;
-              let matrix = group.current.matrixWorld;
-              if (sprite) {
-                matrix = camera.matrixWorldInverse
-                  .clone()
-                  .transpose()
-                  .copyPosition(matrix)
-                  .scale(group.current.scale);
-                matrix.elements[3] = matrix.elements[7] = matrix.elements[11] = 0;
-                matrix.elements[15] = 1;
-              }
-              el.style.width = size.width + "px";
-              el.style.height = size.height + "px";
-              el.style.perspective = isOrthographicCamera ? "" : `${fov}px`;
-              if (transformOuterRef.current && transformInnerRef.current) {
-                transformOuterRef.current.style.transform = `${cameraTransform}${cameraMatrix}translate(${widthHalf}px,${heightHalf}px)`;
-                transformInnerRef.current.style.transform = getObjectCSSMatrix(
-                  matrix,
-                  1 / ((distanceFactor || 10) / 400),
-                );
-              }
-            } else {
-              const scale =
-                distanceFactor === undefined
-                  ? 1
-                  : objectScale(group.current, camera) * distanceFactor;
-              el.style.transform = `translate3d(${vec[0]}px,${vec[1]}px,0) scale(${scale})`;
-            }
-            oldPosition.current = vec;
-            oldZoom.current = camera.zoom;
           }
-        }
 
-        if (!isRayCastOcclusion && occlusionMeshRef.current && !isMeshSizeSet.current) {
+          const previouslyVisible = visible.current;
+          if (raytraceTarget) {
+            const isvisible = isObjectVisible(group.current, camera, raycaster, raytraceTarget);
+            visible.current = isvisible && !isBehindCamera;
+          } else {
+            visible.current = !isBehindCamera;
+          }
+
+          if (previouslyVisible !== visible.current) {
+            if (onOcclude) onOcclude(!visible.current);
+            else el.style.display = visible.current ? "block" : "none";
+          }
+
+          const halfRange = Math.floor(zIndexRange[0] / 2);
+          const zRange = occlude
+            ? isRayCastOcclusion //
+              ? [zIndexRange[0], halfRange]
+              : [halfRange - 1, 0]
+            : zIndexRange;
+
+          el.style.zIndex = `${objectZIndex(group.current, camera, zRange)}`;
+
           if (transform) {
-            if (transformOuterRef.current) {
-              const el = transformOuterRef.current.children[0];
-
-              if (el?.clientWidth && el?.clientHeight) {
-                const { isOrthographicCamera } = camera as OrthographicCamera;
-
-                if (isOrthographicCamera || geometry) {
-                  if (props.scale) {
-                    if (!Array.isArray(props.scale)) {
-                      occlusionMeshRef.current.scale.setScalar(1 / (props.scale as number));
-                    } else if (props.scale instanceof Vector3) {
-                      occlusionMeshRef.current.scale.copy(props.scale.clone().divideScalar(1));
-                    } else {
-                      occlusionMeshRef.current.scale.set(
-                        1 / props.scale[0],
-                        1 / props.scale[1],
-                        1 / props.scale[2],
-                      );
-                    }
-                  }
-                } else {
-                  const ratio = (distanceFactor || 10) / 400;
-                  const w = el.clientWidth * ratio;
-                  const h = el.clientHeight * ratio;
-
-                  occlusionMeshRef.current.scale.set(w, h, 1);
-                }
-
-                isMeshSizeSet.current = true;
-              }
+            const [widthHalf, heightHalf] = [size.width / 2, size.height / 2];
+            const fov = camera.projectionMatrix.elements[5] * heightHalf;
+            const { isOrthographicCamera, top, left, bottom, right } = camera as OrthographicCamera;
+            const cameraMatrix = getCameraCSSMatrix(camera.matrixWorldInverse);
+            const cameraTransform = isOrthographicCamera
+              ? `scale(${fov})translate(${epsilon(-(right + left) / 2)}px,${epsilon((top + bottom) / 2)}px)`
+              : `translateZ(${fov}px)`;
+            let matrix = group.current.matrixWorld;
+            if (sprite) {
+              matrix = camera.matrixWorldInverse
+                .clone()
+                .transpose()
+                .copyPosition(matrix)
+                .scale(group.current.scale);
+              matrix.elements[3] = matrix.elements[7] = matrix.elements[11] = 0;
+              matrix.elements[15] = 1;
+            }
+            el.style.width = size.width + "px";
+            el.style.height = size.height + "px";
+            el.style.perspective = isOrthographicCamera ? "" : `${fov}px`;
+            if (transformOuterRef.current && transformInnerRef.current) {
+              transformOuterRef.current.style.transform = `${cameraTransform}${cameraMatrix}translate(${widthHalf}px,${heightHalf}px)`;
+              transformInnerRef.current.style.transform = getObjectCSSMatrix(
+                matrix,
+                1 / ((distanceFactor || 10) / 400),
+              );
             }
           } else {
-            const ele = el.children[0];
+            const scale =
+              distanceFactor === undefined
+                ? 1
+                : objectScale(group.current, camera) * distanceFactor;
+            el.style.transform = `translate3d(${vec[0]}px,${vec[1]}px,0) scale(${scale})`;
+          }
+          oldPosition.current = vec;
+          oldZoom.current = camera.zoom;
+        }
+      }
 
-            if (ele?.clientWidth && ele?.clientHeight) {
-              const ratio = 1 / viewport.factor;
-              const w = ele.clientWidth * ratio;
-              const h = ele.clientHeight * ratio;
+      if (!isRayCastOcclusion && occlusionMeshRef.current && !isMeshSizeSet.current) {
+        if (transform) {
+          if (transformOuterRef.current) {
+            const el = transformOuterRef.current.children[0];
 
-              occlusionMeshRef.current.scale.set(w, h, 1);
+            if (el?.clientWidth && el?.clientHeight) {
+              const { isOrthographicCamera } = camera as OrthographicCamera;
+
+              if (isOrthographicCamera || geometry) {
+                if (props.scale) {
+                  if (!Array.isArray(props.scale)) {
+                    occlusionMeshRef.current.scale.setScalar(1 / (props.scale as number));
+                  } else if (props.scale instanceof Vector3) {
+                    occlusionMeshRef.current.scale.copy(props.scale.clone().divideScalar(1));
+                  } else {
+                    occlusionMeshRef.current.scale.set(
+                      1 / props.scale[0],
+                      1 / props.scale[1],
+                      1 / props.scale[2],
+                    );
+                  }
+                }
+              } else {
+                const ratio = (distanceFactor || 10) / 400;
+                const w = el.clientWidth * ratio;
+                const h = el.clientHeight * ratio;
+
+                occlusionMeshRef.current.scale.set(w, h, 1);
+              }
 
               isMeshSizeSet.current = true;
             }
-
-            occlusionMeshRef.current.lookAt(gl.camera.position);
           }
-        }
-      });
+        } else {
+          const ele = el.children[0];
 
-      const shaders = React.useMemo(
-        () => ({
-          vertexShader: !transform
-            ? /* glsl */ `
+          if (ele?.clientWidth && ele?.clientHeight) {
+            const ratio = 1 / viewport.factor;
+            const w = ele.clientWidth * ratio;
+            const h = ele.clientHeight * ratio;
+
+            occlusionMeshRef.current.scale.set(w, h, 1);
+
+            isMeshSizeSet.current = true;
+          }
+
+          occlusionMeshRef.current.lookAt(gl.camera.position);
+        }
+      }
+    });
+
+    const shaders = React.useMemo(
+      () => ({
+        vertexShader: !transform
+          ? /* glsl */ `
           /*
             This shader is from the THREE's SpriteMaterial.
             We need to turn the backing plane into a Sprite
@@ -487,31 +487,30 @@ export const Html: ForwardRefComponent<HtmlProps, HTMLDivElement> =
             gl_Position = projectionMatrix * mvPosition;
           }
       `
-            : undefined,
-          fragmentShader: /* glsl */ `
+          : undefined,
+        fragmentShader: /* glsl */ `
         void main() {
           gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
         }
       `,
-        }),
-        [transform],
-      );
+      }),
+      [transform],
+    );
 
-      return (
-        <group {...props} ref={group}>
-          {occlude && !isRayCastOcclusion && (
-            <mesh castShadow={castShadow} receiveShadow={receiveShadow} ref={occlusionMeshRef}>
-              {geometry || <planeGeometry />}
-              {material || (
-                <shaderMaterial
-                  side={DoubleSide}
-                  vertexShader={shaders.vertexShader}
-                  fragmentShader={shaders.fragmentShader}
-                />
-              )}
-            </mesh>
-          )}
-        </group>
-      );
-    },
-  );
+    return (
+      <group {...props} ref={group}>
+        {occlude && !isRayCastOcclusion && (
+          <mesh castShadow={castShadow} receiveShadow={receiveShadow} ref={occlusionMeshRef}>
+            {geometry || <planeGeometry />}
+            {material || (
+              <shaderMaterial
+                side={DoubleSide}
+                vertexShader={shaders.vertexShader}
+                fragmentShader={shaders.fragmentShader}
+              />
+            )}
+          </mesh>
+        )}
+      </group>
+    );
+  });

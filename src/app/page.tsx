@@ -2,12 +2,12 @@
 
 import { GizmoHelper, GizmoViewport, OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useState } from "react";
+// import { useState } from "react";
 
 import { PivotControls } from "@/three/pivot-controls";
 
 export default function Home() {
-  const [visible, setVisible] = useState(true);
+  // const [visible, setVisible] = useState(true);
 
   return (
     <Canvas shadows camera={{ position: [-10, 10, 10], fov: 20 }}>
@@ -25,7 +25,7 @@ export default function Home() {
         scale={0.75}
         disableSliders
         // disableScaling
-        visible={visible}
+        // visible={visible}
         // anchor={[1, 1, 1]}
         depthTest={false}
         rotation={[Math.PI, -Math.PI / 2, 0]}
