@@ -160,20 +160,28 @@ export const AxisPointer: FC<Props> = ({ color, point, directions, childrenRef }
       if (clickInfo.current) {
         const { clickPoint, xDir, yDir, zDir, mPLG, mPLGInv, offsetMultiplier } = clickInfo.current;
 
-        const offsetXW = calculateOffset(clickPoint, xDir, e.ray.origin, e.ray.direction);
+        const currentPoint = clickPoint.clone();
+
+        const offsetXW = calculateOffset(currentPoint, xDir, e.ray.origin, e.ray.direction);
         const offsetXL = offsetXW * offsetMultiplier;
         const offsetXH = fixed ? offsetXL : offsetXL / scale;
         const upscaleX = Math.pow(2, offsetXH * 0.2);
 
-        const offsetYW = calculateOffset(clickPoint, yDir, e.ray.origin, e.ray.direction);
+        currentPoint.setComponent(0, upscaleX);
+
+        const offsetYW = calculateOffset(currentPoint, yDir, e.ray.origin, e.ray.direction);
         const offsetYL = offsetYW * offsetMultiplier;
         const offsetYH = fixed ? offsetYL : offsetYL / scale;
         const upscaleY = Math.pow(2, offsetYH * 0.2);
 
-        const offsetZW = calculateOffset(clickPoint, zDir, e.ray.origin, e.ray.direction);
+        currentPoint.setComponent(1, upscaleY);
+
+        const offsetZW = calculateOffset(currentPoint, zDir, e.ray.origin, e.ray.direction);
         const offsetZL = offsetZW * offsetMultiplier;
         const offsetZH = fixed ? offsetZL : offsetZL / scale;
         const upscaleZ = Math.pow(2, offsetZH * 0.2);
+
+        currentPoint.setComponent(2, upscaleZ);
 
         // if (e.shiftKey) {
         //   upscaleX = Math.round(upscaleX * 10) / 10;
@@ -201,7 +209,10 @@ export const AxisPointer: FC<Props> = ({ color, point, directions, childrenRef }
         scaleV.set(upscaleX, upscaleY, upscaleZ);
         // scaleV.setComponent(0, upscaleX);
         // scaleV.setComponent(1, upscaleY);
-        scaleMatrix.makeScale(scaleV.x, scaleV.y, scaleV.z).premultiply(mPLG).multiply(mPLGInv);
+        scaleMatrix
+          .makeScale(currentPoint.x, currentPoint.y, currentPoint.z)
+          .premultiply(mPLG)
+          .multiply(mPLGInv);
         onDrag(scaleMatrix);
       }
     },
