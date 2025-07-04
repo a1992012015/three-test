@@ -4,6 +4,11 @@ import * as THREE from "three";
 import { composeRefs } from "@/three/core/compose-refs";
 import { AxisPointer } from "@/three/pivot-controls/axis-pointer";
 
+interface Pointer {
+  point: THREE.Vector3;
+  direction: [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+}
+
 interface Props {
   color?: string;
   childrenRef?: RefObject<THREE.Group>;
@@ -13,7 +18,7 @@ export const BoundingBox = forwardRef<THREE.Group, Readonly<Props>>(function Wit
   { childrenRef, color = "red" },
   ref,
 ) {
-  const [points, setPoints] = useState<Array<THREE.Vector3>>([]);
+  const [points, setPoints] = useState<Array<Pointer>>([]);
 
   const boxHelperRef = useRef<THREE.BoxHelper>(null);
 
@@ -40,7 +45,24 @@ export const BoundingBox = forwardRef<THREE.Group, Readonly<Props>>(function Wit
         new THREE.Vector3(max.x, max.y, max.z),
       ];
 
-      setPoints([new THREE.Vector3(max.x, max.y, max.z)]);
+      setPoints([
+        {
+          point: new THREE.Vector3(max.x, max.y, max.z),
+          direction: [
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(0, 1, 0),
+            new THREE.Vector3(0, 0, 1),
+          ],
+        },
+        {
+          point: new THREE.Vector3(min.x, min.y, max.z),
+          direction: [
+            new THREE.Vector3(-1, 0, 0),
+            new THREE.Vector3(0, -1, 0),
+            new THREE.Vector3(0, 0, 1),
+          ],
+        },
+      ]);
 
       return () => {
         current.remove(boxHelper);
@@ -51,19 +73,15 @@ export const BoundingBox = forwardRef<THREE.Group, Readonly<Props>>(function Wit
   return (
     <group ref={composeRefs(ref)}>
       {points.map(
-        (point, index) => {
-          console.log(`index => ${index} point: `, point);
+        (p, index) => {
+          console.log(`====================== index => ${index} point: `, p);
           return (
             <AxisPointer
               key={index}
               color="blue"
-              point={point}
+              point={p.point}
+              directions={p.direction}
               childrenRef={childrenRef}
-              directions={[
-                new THREE.Vector3(1, 0, 0),
-                new THREE.Vector3(0, 1, 0),
-                new THREE.Vector3(0, 0, 1),
-              ]}
             />
           );
         },

@@ -90,7 +90,7 @@ export const AxisPointer: React.FC<Props> = ({ color, point, directions, childre
   const clickInfo = React.useRef<ClickInfo | null>(null);
   const [isHovered, setIsHovered] = React.useState(false);
 
-  // console.log({ scale, fixed });
+  console.log({ scale, fixed });
   // console.log(point.clone());
 
   const position = fixed ? 1.2 : 1.2 * scale;
@@ -160,7 +160,6 @@ export const AxisPointer: React.FC<Props> = ({ color, point, directions, childre
 
       if (clickInfo.current) {
         const { clickPoint, xDir, yDir, zDir, mPLG, mPLGInv, offsetMultiplier } = clickInfo.current;
-        const [min, max] = [1e-5, undefined]; // always limit the minimal value, since setting it very low might break the transform
 
         const offsetXW = calculateOffset(clickPoint, xDir, e.ray.origin, e.ray.direction);
         const offsetXL = offsetXW * offsetMultiplier;
