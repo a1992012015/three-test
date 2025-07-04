@@ -1,7 +1,6 @@
-import * as React from "react";
-import * as THREE from "three";
+import { FC, RefObject, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { ThreeEvent, useThree } from "@react-three/fiber";
-import { RefObject } from "react";
+import * as THREE from "three";
 
 import { Html } from "../Html";
 import { context } from "./context";
@@ -57,7 +56,7 @@ interface Props {
   directions: [THREE.Vector3, THREE.Vector3, THREE.Vector3]; // 可选，默认使用 XYZ
 }
 
-export const AxisPointer: React.FC<Props> = ({ color, point, directions, childrenRef }) => {
+export const AxisPointer: FC<Props> = ({ color, point, directions, childrenRef }) => {
   const {
     annotations,
     annotationsClass,
@@ -72,30 +71,30 @@ export const AxisPointer: React.FC<Props> = ({ color, point, directions, childre
     onDrag,
     onDragEnd,
     userData,
-  } = React.useContext(context);
+  } = useContext(context);
 
   const size = useThree((state) => state.size);
   const camControls = useThree((state) => state.controls) as unknown as
     | { enabled: boolean }
     | undefined;
-  const divRef = React.useRef<HTMLDivElement>(null!);
-  const objRef = React.useRef<THREE.Group>(null!);
-  const meshRef = React.useRef<THREE.Mesh>(null!);
-  const scale0X = React.useRef<number>(0);
-  const scaleCurX = React.useRef<number>(0);
-  const scale0Y = React.useRef<number>(0);
-  const scaleCurY = React.useRef<number>(0);
-  const scale0Z = React.useRef<number>(0);
-  const scaleCurZ = React.useRef<number>(0);
-  const clickInfo = React.useRef<ClickInfo | null>(null);
-  const [isHovered, setIsHovered] = React.useState(false);
+  const divRef = useRef<HTMLDivElement>(null!);
+  const objRef = useRef<THREE.Group>(null!);
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const scale0X = useRef<number>(0);
+  const scaleCurX = useRef<number>(0);
+  const scale0Y = useRef<number>(0);
+  const scaleCurY = useRef<number>(0);
+  const scale0Z = useRef<number>(0);
+  const scaleCurZ = useRef<number>(0);
+  const clickInfo = useRef<ClickInfo | null>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   console.log({ scale, fixed });
   // console.log(point.clone());
 
   const position = fixed ? 1.2 : 1.2 * scale;
 
-  const onPointerDown = React.useCallback(
+  const onPointerDown = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       if (annotations) {
         divRef.current.innerText = `${scaleCurX.current.toFixed(2)}`;
@@ -153,7 +152,7 @@ export const AxisPointer: React.FC<Props> = ({ color, point, directions, childre
     [annotations, childrenRef, directions, fixed, scale, size, onDragStart, camControls],
   );
 
-  const onPointerMove = React.useCallback(
+  const onPointerMove = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
       if (!isHovered) setIsHovered(true);
@@ -209,7 +208,7 @@ export const AxisPointer: React.FC<Props> = ({ color, point, directions, childre
     [isHovered, fixed, scale, annotations, onDrag],
   );
 
-  const onPointerUp = React.useCallback(
+  const onPointerUp = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       if (annotations) {
         divRef.current.style.display = "none";
@@ -229,12 +228,12 @@ export const AxisPointer: React.FC<Props> = ({ color, point, directions, childre
     [annotations, camControls, onDragEnd],
   );
 
-  const onPointerOut = React.useCallback((e: ThreeEvent<PointerEvent>) => {
+  const onPointerOut = useCallback((e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setIsHovered(false);
   }, []);
 
-  const { radius } = React.useMemo(() => {
+  const { radius } = useMemo(() => {
     const radius = fixed ? (lineWidth / scale) * 1.8 : scale / 22.5;
 
     return { radius };

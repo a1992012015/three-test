@@ -34,24 +34,13 @@ export const BoundingBox = forwardRef<THREE.Group, Readonly<Props>>(function Wit
       const box = new THREE.Box3().setFromObject(current);
       const { min, max } = box;
 
-      const worldCorners = [
-        new THREE.Vector3(min.x, min.y, min.z),
-        new THREE.Vector3(min.x, min.y, max.z),
-        new THREE.Vector3(min.x, max.y, min.z),
-        new THREE.Vector3(min.x, max.y, max.z),
-        new THREE.Vector3(max.x, min.y, min.z),
-        new THREE.Vector3(max.x, min.y, max.z),
-        new THREE.Vector3(max.x, max.y, min.z),
-        new THREE.Vector3(max.x, max.y, max.z),
-      ];
-
       setPoints([
         {
-          point: new THREE.Vector3(max.x, max.y, max.z),
+          point: new THREE.Vector3(min.x, min.y, min.z),
           direction: [
-            new THREE.Vector3(1, 0, 0),
-            new THREE.Vector3(0, 1, 0),
-            new THREE.Vector3(0, 0, 1),
+            new THREE.Vector3(-1, 0, 0),
+            new THREE.Vector3(0, -1, 0),
+            new THREE.Vector3(0, 0, -1),
           ],
         },
         {
@@ -59,6 +48,54 @@ export const BoundingBox = forwardRef<THREE.Group, Readonly<Props>>(function Wit
           direction: [
             new THREE.Vector3(-1, 0, 0),
             new THREE.Vector3(0, -1, 0),
+            new THREE.Vector3(0, 0, 1),
+          ],
+        },
+        {
+          point: new THREE.Vector3(min.x, max.y, min.z),
+          direction: [
+            new THREE.Vector3(-1, 0, 0),
+            new THREE.Vector3(0, 1, 0),
+            new THREE.Vector3(0, 0, -1),
+          ],
+        },
+        {
+          point: new THREE.Vector3(min.x, max.y, max.z),
+          direction: [
+            new THREE.Vector3(-1, 0, 0),
+            new THREE.Vector3(0, 1, 0),
+            new THREE.Vector3(0, 0, 1),
+          ],
+        },
+        {
+          point: new THREE.Vector3(max.x, min.y, min.z),
+          direction: [
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(0, -1, 0),
+            new THREE.Vector3(0, 0, -1),
+          ],
+        },
+        {
+          point: new THREE.Vector3(max.x, min.y, max.z),
+          direction: [
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(0, -1, 0),
+            new THREE.Vector3(0, 0, 1),
+          ],
+        },
+        {
+          point: new THREE.Vector3(max.x, max.y, min.z),
+          direction: [
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(0, 1, 0),
+            new THREE.Vector3(0, 0, -1),
+          ],
+        },
+        {
+          point: new THREE.Vector3(max.x, max.y, max.z),
+          direction: [
+            new THREE.Vector3(1, 0, 0),
+            new THREE.Vector3(0, 1, 0),
             new THREE.Vector3(0, 0, 1),
           ],
         },
