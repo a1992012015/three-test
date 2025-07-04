@@ -2,7 +2,7 @@ import * as THREE from "three";
 import * as React from "react";
 
 export type OnDragStartProps = {
-  component: "Arrow" | "Slider" | "Rotator" | "Sphere";
+  component: "Arrow" | "Slider" | "Rotator" | "Sphere" | "Point";
   axis: 0 | 1 | 2;
   origin: THREE.Vector3;
   directions: THREE.Vector3[];

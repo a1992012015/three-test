@@ -191,10 +191,10 @@ export const AxisPointer: FC<Props> = ({ color, point, directions, childrenRef }
         //   upscaleZ = Math.min(upscaleZ, max / scale0Z.current);
         // }
 
-        scaleCurX.current = scale0X.current * upscaleX;
-        scaleCurY.current = scale0Y.current * upscaleY;
-        scaleCurZ.current = scale0Z.current * upscaleZ;
-        meshRef.current.position.set(scaleCurX.current, scaleCurY.current, scaleCurZ.current);
+        scaleCurX.current = (scale0X.current || 1) * upscaleX;
+        scaleCurY.current = (scale0Y.current || 1) * upscaleY;
+        scaleCurZ.current = (scale0Z.current || 1) * upscaleZ;
+        // meshRef.current.position.set(scaleCurX.current, scaleCurY.current, scaleCurZ.current);
         if (annotations) {
           divRef.current.innerText = `${scaleCurX.current.toFixed(2)}`;
         }
@@ -213,6 +213,7 @@ export const AxisPointer: FC<Props> = ({ color, point, directions, childrenRef }
       if (annotations) {
         divRef.current.style.display = "none";
       }
+      console.log("onPointerUp");
       e.stopPropagation();
       scale0X.current = scaleCurX.current;
       scale0Y.current = scaleCurY.current;

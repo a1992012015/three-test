@@ -277,10 +277,6 @@ export const PivotControls: ForwardRefComponent<PivotControlsProps, THREE.Group>
 
     React.useImperativeHandle(fRef, () => ref.current, []);
 
-    console.log({ offset, rotation });
-
-    console.log("ref", vCenter);
-    console.log("gizmoRef", vPosition);
     return (
       <context.Provider value={config}>
         <group ref={parentRef}>
@@ -312,26 +308,6 @@ export const PivotControls: ForwardRefComponent<PivotControlsProps, THREE.Group>
                   {!disableScaling && activeAxes[0] && <ScalingSphere axis={0} direction={xDir} />}
                   {!disableScaling && activeAxes[1] && <ScalingSphere axis={1} direction={yDir} />}
                   {!disableScaling && activeAxes[2] && <ScalingSphere axis={2} direction={zDir} />}
-
-                  {/*<AxisPointer*/}
-                  {/*  color="blue"*/}
-                  {/*  point={new THREE.Vector3(1, 1, 1)}*/}
-                  {/*  directions={[*/}
-                  {/*    new THREE.Vector3(1, 1, 0), // xDir 方向*/}
-                  {/*    new THREE.Vector3(0, 1, 1), // yDir 方向*/}
-                  {/*    new THREE.Vector3(1, 0, 1), // zDir 方向*/}
-                  {/*  ]}*/}
-                  {/*/>*/}
-
-                  {/*<AxisPointer*/}
-                  {/*  color="yellow"*/}
-                  {/*  point={new THREE.Vector3(0, 0, 0)}*/}
-                  {/*  directions={[*/}
-                  {/*    new THREE.Vector3(1, 0, 0),*/}
-                  {/*    new THREE.Vector3(0, 1, 0),*/}
-                  {/*    new THREE.Vector3(0, 0, 1),*/}
-                  {/*  ]}*/}
-                  {/*/>*/}
                 </>
               )}
             </group>

@@ -28,7 +28,7 @@ export default function Home() {
         // visible={visible}
         // anchor={[1, 1, 1]}
         depthTest={false}
-        rotation={[Math.PI, -Math.PI / 2, 0]}
+        // rotation={[Math.PI, -Math.PI / 2, 0]}
       >
         <mesh castShadow receiveShadow>
           <boxGeometry args={[2, 1, 2]} />
