@@ -1,8 +1,8 @@
 import { forwardRef, RefObject, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
-import { AxisPointer } from "@/three/pivot-controls/axis-pointer";
 import { composeRefs } from "@/three/core/compose-refs";
+import { AxisPointer } from "@/three/pivot-controls/axis-pointer";
 
 interface Props {
   color?: string;
@@ -40,7 +40,7 @@ export const BoundingBox = forwardRef<THREE.Group, Readonly<Props>>(function Wit
         new THREE.Vector3(max.x, max.y, max.z),
       ];
 
-      setPoints(worldCorners);
+      setPoints([new THREE.Vector3(max.x, max.y, max.z)]);
 
       return () => {
         current.remove(boxHelper);
@@ -49,14 +49,16 @@ export const BoundingBox = forwardRef<THREE.Group, Readonly<Props>>(function Wit
   }, [childrenRef, color]);
 
   return (
-    <group ref={composeRefs(ref)} position={childrenRef?.current?.position}>
+    <group ref={composeRefs(ref)}>
       {points.map(
         (point, index) => {
+          console.log(`index => ${index} point: `, point);
           return (
             <AxisPointer
               key={index}
               color="blue"
               point={point}
+              childrenRef={childrenRef}
               directions={[
                 new THREE.Vector3(1, 0, 0),
                 new THREE.Vector3(0, 1, 0),
